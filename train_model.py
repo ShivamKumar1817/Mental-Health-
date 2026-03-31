@@ -14,6 +14,7 @@ def main():
         print(f"Error loading data: {e}")
         return
 
+    # Keep only the relevant columns and drop NaNs
     df = df[['statement', 'status']].dropna()
 
     X = df['statement']
@@ -21,29 +22,27 @@ def main():
 
     print(f"Dataset shape after dropping nulls: {df.shape}")
     print("Splitting data...")
-    
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+    # Creating a pipeline with TF-IDF Vectorizer and Logistic Regression
     print("Building and training pipeline...")
     pipeline = Pipeline([
-        ('tfidf', TfidfVectorizer(max_features=25000, ngram_range=(1, 2), stop_words='english')),
-        ('clf', LogisticRegression(C=2.0, max_iter=2000, n_jobs=-1, class_weight='balanced'))
+        ('tfidf', TfidfVectorizer(max_features=10000, stop_words='english')),
+        ('clf', LogisticRegression(max_iter=1000, n_jobs=-1))
     ])
 
-    print("Training model...")
     pipeline.fit(X_train, y_train)
 
     print("Evaluating model...")
     y_pred = pipeline.predict(X_test)
-    print("\nClassification Report (Balanced):")
+    print("\nClassification Report:")
     print(classification_report(y_test, y_pred))
 
-    model_path = 'mental_health_model_large.pkl'
+    model_path = 'mental_health_model.pkl'
     print(f"Saving model to {model_path}...")
     joblib.dump(pipeline, model_path)
     print("Complete!")
 
 if __name__ == "__main__":
     main()
+
